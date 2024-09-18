@@ -25,6 +25,7 @@ services:
       - --lower_case_table_names=1
     networks:
       - echall-network
+
   redis:
     image: redis:latest
     container_name: echall-redis
@@ -32,6 +33,7 @@ services:
       - "6379:6379"
     networks:
       - echall-network
+
   mongo:
     image: mongo:latest
     container_name: echall-mongo
@@ -46,3 +48,22 @@ services:
     networks:
       - echall-network
 
+  springbootapp:
+    build: .
+    container_name: echall-springboot
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://echall-mysql:3306/${LOCAL_DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=${DB_ROOT_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_ROOT_PASSWORD}
+      - SPRING_REDIS_HOST=echall-redis
+      - SPRING_REDIS_PORT=6379
+      - SPRING_MONGO_URI=mongodb://echall-mongo:27017/${MONGO_DATABASE}
+    depends_on:
+      - mysql
+      - redis
+      - mongo
+    networks:
+      - echall-network
